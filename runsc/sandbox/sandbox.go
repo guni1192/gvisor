@@ -695,17 +695,16 @@ func (s *Sandbox) createSandboxProcess(conf *boot.Config, args *Args, startSyncF
 		nextFD++
 	}
 
+	if args.Attached {
+		cmd.Args = append(cmd.Args, "--attached")
+	}
+
 	// Add container as the last argument.
 	cmd.Args = append(cmd.Args, s.ID)
 
 	// Log the FDs we are donating to the sandbox process.
 	for i, f := range cmd.ExtraFiles {
 		log.Debugf("Donating FD %d: %q", i+3, f.Name())
-	}
-
-	if args.Attached {
-		// Kill sandbox if parent process exits in attached mode.
-		cmd.SysProcAttr.Pdeathsig = syscall.SIGKILL
 	}
 
 	log.Debugf("Starting sandbox: %s %v", binPath, cmd.Args)

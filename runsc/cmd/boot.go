@@ -23,6 +23,7 @@ import (
 
 	"github.com/google/subcommands"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
+	"golang.org/x/sys/unix"
 	"gvisor.dev/gvisor/pkg/log"
 	"gvisor.dev/gvisor/runsc/boot"
 	"gvisor.dev/gvisor/runsc/boot/platforms"
@@ -82,8 +83,10 @@ type Boot struct {
 	// sandbox (e.g. gofer) and sent through this FD.
 	mountsFD int
 
-	// pidns is set if the sanadbox is in its own pid namespace.
+	// pidns is set if the sandbox is in its own pid namespace.
 	pidns bool
+
+	attached bool
 }
 
 // Name implements subcommands.Command.Name.
@@ -118,6 +121,7 @@ func (b *Boot) SetFlags(f *flag.FlagSet) {
 	f.IntVar(&b.userLogFD, "user-log-fd", 0, "file descriptor to write user logs to. 0 means no logging.")
 	f.IntVar(&b.startSyncFD, "start-sync-fd", -1, "required FD to used to synchronize sandbox startup")
 	f.IntVar(&b.mountsFD, "mounts-fd", -1, "mountsFD is the file descriptor to read list of mounts after they have been resolved (direct paths, no symlinks).")
+	f.BoolVar(&b.attached, "attached", false, "if attached is true, kills the sandbox process when the parent process terminates")
 }
 
 // Execute implements subcommands.Command.Execute.  It starts a sandbox in a
@@ -159,6 +163,13 @@ func (b *Boot) Execute(_ context.Context, f *flag.FlagSet, args ...interface{}) 
 		}
 	}
 
+	if b.attached {
+		// Ensure this process is killed when parent process terminates when
+		// attached mode is enabled.
+		if err := unix.Prctl(unix.PR_SET_PDEATHSIG, uintptr(unix.SIGKILL), 0, 0, 0); err != nil {
+			Fatalf("error setting parent death signal: %v", err)
+		}
+	}
 	// Get the spec from the specFD.
 	specFile := os.NewFile(uintptr(b.specFD), "spec file")
 	defer specFile.Close()

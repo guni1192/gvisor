@@ -22,18 +22,37 @@ import "fmt"
 const containerdConfigTemplate = `
 disabled_plugins = ["restart"]
 [plugins.linux]
-  runtime = "%s"
+  runtime = %q
   runtime_root = "/tmp/test-containerd/runsc"
   shim = "/usr/local/bin/gvisor-containerd-shim"
   shim_debug = true
 
 [plugins.cri.containerd.runtimes.runsc]
   runtime_type = "io.containerd.runtime.v1.linux"
-  runtime_engine = "%s"
+  runtime_engine = %q
+`
+
+const containerdConfigTemplate2 = `
+disabled_plugins = ["restart"]
+[plugins.linux]
+  shim_debug = true
+
+[plugins.cri.containerd.runtimes.runsc]
+  runtime_type = "io.containerd.runsc.v1"
 `
 
 // ContainerdConfig returns a containerd config file with the specified
 // runtime.
 func ContainerdConfig(runtime string) string {
 	return fmt.Sprintf(containerdConfigTemplate, runtime, runtime)
+}
+
+const gvisorContainerdShimTemplate = `
+[runsc_config]
+  debug = "true"
+	debug-log = %q
+`
+
+func GvisorContainerdShimConfig(tmpPath string) string {
+	return fmt.Sprintf(gvisorContainerdShimTemplate, tmpPath)
 }

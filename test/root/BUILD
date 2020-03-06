@@ -16,6 +16,7 @@ go_test(
         "crictl_test.go",
         "main_test.go",
         "oom_score_adj_test.go",
+        "runsc_test.go",
     ],
     data = [
         "//runsc",
