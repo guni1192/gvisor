@@ -89,8 +89,9 @@ func isSingleStepping(regs *syscall.PtraceRegs) bool {
 }
 
 // updateSyscallRegs updates registers after finishing sysemu.
-func updateSyscallRegs(regs *syscall.PtraceRegs) {
-	// No special work is necessary.
+func updateSyscallRegs(regs *syscall.PtraceRegs, ac arch.Context) {
+	origR0 := &ac.StateData().OrigR0
+	*origR0 = regs.Regs[0]
 	return
 }
 

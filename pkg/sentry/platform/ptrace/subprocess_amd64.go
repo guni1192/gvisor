@@ -87,7 +87,7 @@ func isSingleStepping(regs *syscall.PtraceRegs) bool {
 }
 
 // updateSyscallRegs updates registers after finishing sysemu.
-func updateSyscallRegs(regs *syscall.PtraceRegs) {
+func updateSyscallRegs(regs *syscall.PtraceRegs, ac arch.Context) {
 	// Ptrace puts -ENOSYS in rax on syscall-enter-stop.
 	regs.Rax = regs.Orig_rax
 }

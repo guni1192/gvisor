@@ -559,7 +559,7 @@ func (s *subprocess) switchToApp(c *context, ac arch.Context) bool {
 		// Is it a system call?
 		if sig == (syscallEvent | syscall.SIGTRAP) {
 			// Ensure registers are sane.
-			updateSyscallRegs(regs)
+			updateSyscallRegs(regs, ac)
 			return true
 		} else if sig == syscall.SIGSTOP {
 			// SIGSTOP was delivered to another thread in the same thread
