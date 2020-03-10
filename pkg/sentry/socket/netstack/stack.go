@@ -200,6 +200,32 @@ func (s *Stack) SetTCPSACKEnabled(enabled bool) error {
 // Statistics implements inet.Stack.Statistics.
 func (s *Stack) Statistics(stat interface{}, arg string) error {
 	switch stats := stat.(type) {
+	case *inet.StatDev:
+		for _, ni := range s.Stack.NICInfo() {
+			if ni.Name == arg {
+				*stats = inet.StatDev{
+					// Receive section.
+					ni.Stats.Rx.Bytes.Value(),   // bytes.
+					ni.Stats.Rx.Packets.Value(), // packets.
+					0,                           // TODO(gvisor.dev/issue/2103) errs.
+					0,                           // TODO(gvisor.dev/issue/2103) drop.
+					0,                           // TODO(gvisor.dev/issue/2103) fifo.
+					0,                           // TODO(gvisor.dev/issue/2103) frame.
+					0,                           // TODO(gvisor.dev/issue/2103) compressed.
+					0,                           // TODO(gvisor.dev/issue/2103) multicast.
+					// Transmit section.
+					ni.Stats.Tx.Bytes.Value(),   // bytes.
+					ni.Stats.Tx.Packets.Value(), // packets.
+					0,                           // TODO(gvisor.dev/issue/2103) errs.
+					0,                           // TODO(gvisor.dev/issue/2103) drop.
+					0,                           // TODO(gvisor.dev/issue/2103) fifo.
+					0,                           // TODO(gvisor.dev/issue/2103) colls.
+					0,                           // TODO(gvisor.dev/issue/2103) carrier.
+					0,                           // TODO(gvisor.dev/issue/2103) compressed.
+				}
+				break
+			}
+		}
 	case *inet.StatSNMPIP:
 		ip := Metrics.IP
 		*stats = inet.StatSNMPIP{
